@@ -1,0 +1,31 @@
+#+TITLE: Emacs Configuration
+
+
+* Startup Config
+#+begin_src emacs-lisp
+  ;; Do not autosave.
+  auto-save-default nil
+
+  ;; Press ESC to quit what you are doing instead of C-g
+  ;;(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+  ;; Automatically update buffers if file content on the disk has changed.
+  (global-auto-revert-mode t)
+#+end_src
+
+
+
+* Appearence
+#+BEGIN_SRC emacs-lisp
+  ;; disable landing page
+  (setq inhibit-startup-message t)
+
+  ;; disable toolbar
+  (tool-bar-mode -1)
+
+  ;; disable scroll bar
+  ;; (toggle-scroll-bar -1) q
+
+  ;; load theme 
+  (load-theme 'tango-dark t)
+#+END_SRC
