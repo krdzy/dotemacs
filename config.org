@@ -16,16 +16,37 @@
 
 
 * Appearence
-#+BEGIN_SRC emacs-lisp
-  ;; disable landing page
-  (setq inhibit-startup-message t)
+** General frame appearence
+  #+begin_src emacs-lisp
+    ;; disable landing page
+    (setq inhibit-startup-message t)
 
-  ;; disable toolbar
-  (tool-bar-mode -1)
+    ;; disable toolbar
+    (tool-bar-mode -1)
 
-  ;; disable scroll bar
-  ;; (toggle-scroll-bar -1) q
+    ;; disable scroll bar
+    ;; (toggle-scroll-bar -1) q
 
-  ;; load theme 
-  (load-theme 'tango-dark t)
-#+END_SRC
+    ;; load theme
+    (straight-use-package 'doom-themes)
+    (load-theme 'doom-dracula t)
+
+    ;; Global settings (defaults)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+	  doom-themes-enable-italic t) ; if nil, italics is universally disabled
+
+    ;; Enable flashing mode-line on errors
+    (doom-themes-visual-bell-config)
+
+    ;; Corrects (and improves) org-mode's native fontification.
+    (doom-themes-org-config)
+  #+end_src
+
+
+* Which Key
+  minor mode for Emacs that displays the key bindings following your currently entered incomplete command (a prefix) in a popup.
+  #+begin_src emacs-lisp
+    (straight-use-package 'which-key)
+    (setq which-key-idle-delay 0.5)
+    (add-hook 'after-init-hook 'which-key-mode)
+  #+end_src

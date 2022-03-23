@@ -1,4 +1,3 @@
-
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -15,7 +14,7 @@
 
 (require 'org)
 (org-babel-load-file
- (expand-file-name "config/config.org"
+ (expand-file-name "config.org"
                    user-emacs-directory))
 
 
