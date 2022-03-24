@@ -10,7 +10,7 @@
   ;;(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
   ;; Automatically update buffers if file content on the disk has changed.
-  (global-auto-revert-mode t)
+  (global-auto-revert-mode 1)
 #+end_src
 
 
@@ -50,3 +50,26 @@
     (setq which-key-idle-delay 0.5)
     (add-hook 'after-init-hook 'which-key-mode)
   #+end_src
+
+
+* System Completion
+** Vertico
+   Completion framework used inside Emacs system.
+#+begin_src emacs-lisp
+  ;; Vertico as completion framework to use in Emacs buffers/minibufers
+  (straight-use-package 'vertico)
+  ;; enable vertico
+  (vertico-mode 1)
+  ;; enable completion history
+  (savehist-mode 1)
+  (setq history-length 25)
+#+end_src
+** Marginalia
+   Adds more info about files and buffers on top of Vertico minibufer
+#+begin_src emacs-lisp
+  ;; Adds more info about files and buffers inside Vertico minibuffer
+  (straight-use-package 'marginalia)
+  (marginalia-mode 1)
+  (setq marginalia-annotators '(marginalia-annotators-heavy
+				marginalia-annotators-light nil))
+#+end_src

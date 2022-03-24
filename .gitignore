@@ -3,3 +3,4 @@ straight/
 config.el
 *~
 *.el#
+*history*
