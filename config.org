@@ -1,7 +1,8 @@
-#+TITLE: Emacs Configuration
+/#+TITLE: Emacs Configuration
 
 
 * Startup Config
+  
 #+begin_src emacs-lisp
   ;; Do not autosave.
   auto-save-default nil
@@ -15,7 +16,17 @@
 
 
 
+* Org
+  configuration for org mode
+  #+begin_src emacs-lisp
+    (require 'org-tempo)
+    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  #+end_src
+
+
+  
 * Appearence
+  
 ** General frame appearence
   #+begin_src emacs-lisp
     ;; disable landing page
@@ -29,7 +40,7 @@
 
     ;; load theme
     (straight-use-package 'doom-themes)
-    (load-theme 'doom-dracula t)
+    (load-theme 'doom-moonlight t)
 
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -42,17 +53,29 @@
     (doom-themes-org-config)
   #+end_src
 
+** Editor
+   settings for text editor appearence
+   #+begin_src emacs-lisp
+     (show-paren-mode 1)
+   #+end_src
 
-* Which Key
-  minor mode for Emacs that displays the key bindings following your currently entered incomplete command (a prefix) in a popup.
-  #+begin_src emacs-lisp
-    (straight-use-package 'which-key)
-    (setq which-key-idle-delay 0.5)
-    (add-hook 'after-init-hook 'which-key-mode)
-  #+end_src
+** Font
+   settings for font type, size , style...
+   #+begin_src emacs-lisp
+     (cond
+      ((find-font (font-spec :name "FiraMono Nerd Font"))
+       (set-frame-font "FiraMono Nerd Font-14"))
+      ((find-font (font-spec :name "DroidSansMono Nerd Font"))
+       (set-frame-font "DroidSansMono Nerd-14"))
+      ((find-font (font-spec :name "SpaceMono Nerd Font"))
+       (set-frame-font "Space Mono Nerd Font-14"))
+      )
+   #+end_src
 
-
+   
+   
 * System Completion
+  
 ** Vertico
    Completion framework used inside Emacs system.
 #+begin_src emacs-lisp
@@ -64,6 +87,18 @@
   (savehist-mode 1)
   (setq history-length 25)
 #+end_src
+
+** Orderles
+   advanced completion style
+   #+begin_src emacs-lisp
+     (straight-use-package 'orderless)
+
+     ;; set up for all competions except for files
+     (setq completion-styles '(orderless)
+	     completion-category-defaults nil
+	     completion-category-overrides '((file (styles partial-completion))))
+   #+end_src
+
 ** Marginalia
    Adds more info about files and buffers on top of Vertico minibufer
 #+begin_src emacs-lisp
@@ -73,3 +108,30 @@
   (setq marginalia-annotators '(marginalia-annotators-heavy
 				marginalia-annotators-light nil))
 #+end_src
+
+
+
+* System utilities
+  packages to make my life with emacs easier.
+  
+** Which Key
+   minor mode for Emacs that displays the key bindings following your currently entered incomplete command (a prefix) in a popup.
+  #+begin_src emacs-lisp
+    (straight-use-package 'which-key)
+    (setq which-key-idle-delay 0.5)
+    (add-hook 'after-init-hook 'which-key-mode)
+  #+end_src
+
+** Helpful
+   Helpful is an alternative to the built-in Emacs help that provides much more contextual information.
+  #+begin_src emacs-lisp
+    (straight-use-package 'helpful)
+
+    ;; keybindings 
+    (global-set-key (kbd "C-h f") #'helpful-callable)
+    (global-set-key (kbd "C-h v") #'helpful-variable)
+    (global-set-key (kbd "C-h k") #'helpful-key)
+    (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+
+  #+end_src
+  
