@@ -57,6 +57,12 @@
    settings for text editor appearence
    #+begin_src emacs-lisp
      (show-paren-mode 1)
+     ;; show line numbers in editor
+     (global-display-line-numbers-mode 1)
+   #+end_src
+
+   #+begin_src emacs-lisp
+     (setq ispell-program-name "/usr/local/bin/aspell")
    #+end_src
 
 ** Font
@@ -86,7 +92,32 @@
   ;; enable completion history
   (savehist-mode 1)
   (setq history-length 25)
+
+  ;; setup moving up and down on C-j and C-k keys insted of
+  ;; C-n and C-p to avoid moving from homerow
+  (define-key vertico-map
+    (kbd "C-j") 'vertico-next)
+  (define-key vertico-map
+    (kbd "C-k") 'vertico-previous)
 #+end_src
+
+** Company
+   In editor completion framework.
+   #+begin_src emacs-lisp
+     ;; set this variable to limit indent to onlt one TAB hit.
+     ;; All subsequent hit will try to complete.
+     (setq tab-always-indent 'complete)
+
+     (straight-use-package 'company)
+     (global-company-mode 1)
+
+     ;; setup moving up and down on C-j and C-k keys insted of
+     ;; C-n and C-p to avoid moving from homerow
+     (define-key company-active-map
+       (kbd "C-j") 'company-select-next-or-abort)
+     (define-key company-active-map
+       (kbd "C-k") 'company-select-previous-or-abort)
+   #+end_src
 
 ** Orderles
    advanced completion style
@@ -97,6 +128,13 @@
      (setq completion-styles '(orderless)
 	     completion-category-defaults nil
 	     completion-category-overrides '((file (styles partial-completion))))
+
+     ;; ordering for matching modes
+     (setq orderless-matching-styles
+	   '(orderless-literal
+	     orderless-prefixes
+	     orderless-initialism
+	     orderless-regexp))
    #+end_src
 
 ** Marginalia
@@ -135,3 +173,21 @@
 
   #+end_src
   
+
+
+* Evil U+1F608
+** Setup for evil mode
+  #+begin_src emacs-lisp
+    (straight-use-package 'evil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+    (setq evil-want-keybinding nil)
+    (evil-mode 1)
+  #+end_src
+
+** Evil colections
+   #+begin_src emacs-lisp
+     (straight-use-package 'evil-collection)
+     (setq evil-collection-company-use-tng nil)
+     (evil-collection-init)
+   #+end_src 
