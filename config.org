@@ -12,7 +12,12 @@
 
   ;; Automatically update buffers if file content on the disk has changed.
   (global-auto-revert-mode 1)
-#+end_src
+
+  ;; Packcage which loads all PATH from Mac into Emacs
+  (straight-use-package 'exec-path-from-shell)
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+#+End_src
 
 
 
@@ -40,7 +45,6 @@
 
     ;; load theme
     (straight-use-package 'doom-themes)
-    (load-theme 'doom-moonlight t)
 
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -51,6 +55,14 @@
 
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config)
+
+    ;; Shanty themes as Doom alternative when I get bored with it.
+    (straight-use-package '(shanty-themes :host github :repo "qhga/shanty-themes"))
+
+    ;; Load currently favorite theme :)
+    (load-theme 'doom-moonlight t)
+    ;; (load-theme 'shanty-themes-dark t)
+
   #+end_src
 
 ** Editor
@@ -109,6 +121,7 @@
      (setq tab-always-indent 'complete)
 
      (straight-use-package 'company)
+     (setq company-minimum-prefix-length 1)
      (global-company-mode 1)
 
      ;; setup moving up and down on C-j and C-k keys insted of
@@ -164,12 +177,15 @@
    Helpful is an alternative to the built-in Emacs help that provides much more contextual information.
   #+begin_src emacs-lisp
     (straight-use-package 'helpful)
+    ;; complementary package for demo code in help buffer
+    (straight-use-package 'elisp-demos)
 
     ;; keybindings 
     (global-set-key (kbd "C-h f") #'helpful-callable)
     (global-set-key (kbd "C-h v") #'helpful-variable)
     (global-set-key (kbd "C-h k") #'helpful-key)
     (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+    (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update)
 
   #+end_src
   
@@ -191,3 +207,30 @@
      (setq evil-collection-company-use-tng nil)
      (evil-collection-init)
    #+end_src 
+
+
+* Development
+Here are settings for making Emacs my development environment.
+** LSP
+Language server protocol mode installation and settings.
+#+begin_src emacs-lisp
+  (straight-use-package 'lsp-mode)
+#+end_src
+
+** Python
+#+begin_src emacs-lisp
+  (with-eval-after-load 'lsp-mode
+    (add-hook 'python-mode-hook #'lsp-mode))
+#+end_src
+
+** Go
+#+begin_src emacs-lisp
+  (straight-use-package 'go-mode)
+  (add-hook 'go-mode-hook #'lsp)
+#+end_src
+
+** Kotlin
+#+begin_src emacs-lisp
+  (straight-use-package 'kotlin-mode)
+  (add-hook 'kotlin-mode-hook 'lsp)
+#+end_src
