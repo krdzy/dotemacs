@@ -1,6 +1,10 @@
 auto-save-list/
 straight/
+elpaca/
+eln-cache/
 config.el
 *~
 *.el#
 *history*
+.DS*
+.lsp*

@@ -17,8 +17,48 @@
   (straight-use-package 'exec-path-from-shell)
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize))
+
+  (recentf-mode 1)
 #+End_src
 
+#+begin_src emacs-lisp
+    (defvar elpaca-installer-version 0.3)
+    (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+    (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+    (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+    (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+				  :ref nil
+				  :files (:defaults (:exclude "extensions"))
+				  :build (:not elpaca--activate-package)))
+    (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+	   (build (expand-file-name "elpaca/" elpaca-builds-directory))
+	   (order (cdr elpaca-order))
+	   (default-directory repo))
+      (add-to-list 'load-path (if (file-exists-p build) build repo))
+      (unless (file-exists-p repo)
+	(make-directory repo t)
+	(condition-case-unless-debug err
+	    (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+		     ((zerop (call-process "git" nil buffer t "clone"
+					   (plist-get order :repo) repo)))
+		     ((zerop (call-process "git" nil buffer t "checkout"
+					   (or (plist-get order :ref) "--"))))
+		     (emacs (concat invocation-directory invocation-name))
+		     ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+					   "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+		     ((require 'elpaca))
+		     ((elpaca-generate-autoloads "elpaca" repo)))
+		(kill-buffer buffer)
+	      (error "%s" (with-current-buffer buffer (buffer-string))))
+	  ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+      (unless (require 'elpaca-autoloads nil t)
+	(require 'elpaca)
+	(elpaca-generate-autoloads "elpaca" repo)
+	(load "./elpaca-autoloads")))
+    (add-hook 'after-init-hook #'elpaca-process-queues)
+    (elpaca `(,@elpaca-order))
+  (setq package-enable-at-startup nil)
+#+End_src
 
 
 * Org
@@ -44,7 +84,7 @@
     ;; (toggle-scroll-bar -1) q
 
     ;; load theme
-    (straight-use-package 'doom-themes)
+    (elpaca doom-themes
 
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -60,7 +100,7 @@
     (straight-use-package '(shanty-themes :host github :repo "qhga/shanty-themes"))
 
     ;; Load currently favorite theme :)
-    (load-theme 'doom-moonlight t)
+    (load-theme 'doom-moonlight t))
     ;; (load-theme 'shanty-themes-dark t)
 
   #+end_src
@@ -96,22 +136,21 @@
   
 ** Vertico
    Completion framework used inside Emacs system.
-#+begin_src emacs-lisp
-  ;; Vertico as completion framework to use in Emacs buffers/minibufers
-  (straight-use-package 'vertico)
-  ;; enable vertico
-  (vertico-mode 1)
-  ;; enable completion history
-  (savehist-mode 1)
-  (setq history-length 25)
-
-  ;; setup moving up and down on C-j and C-k keys insted of
-  ;; C-n and C-p to avoid moving from homerow
-  (define-key vertico-map
-    (kbd "C-j") 'vertico-next)
-  (define-key vertico-map
-    (kbd "C-k") 'vertico-previous)
-#+end_src
+   #+begin_src emacs-lisp
+     ;; Vertico as completion framework to use in Emacs buffers/minibufers
+     (elpaca vertico
+     ;; enable vertico
+     (vertico-mode 1)
+     ;; enable completion history
+     (savehist-mode 1)
+     (setq history-length 24)
+     ;; setup moving up and down on C-j and C-k keys insted of
+     ;; C-n and C-p to avoid moving from homerow
+     (define-key vertico-map
+       (kbd "C-j") 'vertico-next)
+     (define-key vertico-map
+       (kbd "C-k") 'vertico-previous))
+  #+end_src
 
 ** Company
    In editor completion framework.
@@ -120,7 +159,7 @@
      ;; All subsequent hit will try to complete.
      (setq tab-always-indent 'complete)
 
-     (straight-use-package 'company)
+     (elpaca company
      (setq company-minimum-prefix-length 1)
      (global-company-mode 1)
 
@@ -129,48 +168,47 @@
      (define-key company-active-map
        (kbd "C-j") 'company-select-next-or-abort)
      (define-key company-active-map
-       (kbd "C-k") 'company-select-previous-or-abort)
+       (kbd "C-k") 'company-select-previous-or-abort))
    #+end_src
 
 ** Orderles
    advanced completion style
    #+begin_src emacs-lisp
-     (straight-use-package 'orderless)
-
+     (elpaca orderless
      ;; set up for all competions except for files
      (setq completion-styles '(orderless)
-	     completion-category-defaults nil
-	     completion-category-overrides '((file (styles partial-completion))))
+	   completion-category-defaults nil
+	   completion-category-overrides '((file (styles partial-completion))))
 
      ;; ordering for matching modes
      (setq orderless-matching-styles
 	   '(orderless-literal
 	     orderless-prefixes
 	     orderless-initialism
-	     orderless-regexp))
+	     orderless-regexp)))
    #+end_src
 
 ** Marginalia
    Adds more info about files and buffers on top of Vertico minibufer
-#+begin_src emacs-lisp
-  ;; Adds more info about files and buffers inside Vertico minibuffer
-  (straight-use-package 'marginalia)
-  (marginalia-mode 1)
-  (setq marginalia-annotators '(marginalia-annotators-heavy
-				marginalia-annotators-light nil))
-#+end_src
+  #+begin_src emacs-lisp
+    ;; Adds more info about files and buffers inside Vertico minibuffer
+    (elpaca marginalia
+    (marginalia-mode 1)
+    (setq marginalia-annotators '(marginalia-annotators-heavy
+				  marginalia-annotators-light nil)))
+  #+end_src
 
 
 
 * System utilities
-  packages to make my life with emacs easier.
+packages to make my life with emacs easier.
   
 ** Which Key
    minor mode for Emacs that displays the key bindings following your currently entered incomplete command (a prefix) in a popup.
   #+begin_src emacs-lisp
-    (straight-use-package 'which-key)
+    (elpaca which-key
     (setq which-key-idle-delay 0.5)
-    (add-hook 'after-init-hook 'which-key-mode)
+    (add-hook 'elpaca-after-init-hook 'which-key-mode))
   #+end_src
 
 ** Helpful
@@ -178,34 +216,41 @@
   #+begin_src emacs-lisp
     (straight-use-package 'helpful)
     ;; complementary package for demo code in help buffer
-    (straight-use-package 'elisp-demos)
+    (elpaca 'elisp-demos
 
     ;; keybindings 
     (global-set-key (kbd "C-h f") #'helpful-callable)
     (global-set-key (kbd "C-h v") #'helpful-variable)
     (global-set-key (kbd "C-h k") #'helpful-key)
     (global-set-key (kbd "C-c C-d") #'helpful-at-point)
-    (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update)
+    (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update))
 
   #+end_src
   
 
 
-* Evil U+1F608
+* Evil 😈
 ** Setup for evil mode
   #+begin_src emacs-lisp
-    (straight-use-package 'evil)
+    (elpaca evil
+
+    (with-eval-after-load 'helpful
+      (setq evil-lookup-func #'helpful-at-point))
     (setq evil-want-C-u-scroll t)
     (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
     (setq evil-want-keybinding nil)
     (evil-mode 1)
+
+
+    (global-set-key (kbd "s-[") #'evil-jump-backward)
+    (global-set-key (kbd "s-]") #'evil-jump-forward))
   #+end_src
 
 ** Evil colections
    #+begin_src emacs-lisp
-     (straight-use-package 'evil-collection)
+     (elpaca evil-collection
      (setq evil-collection-company-use-tng nil)
-     (evil-collection-init)
+     (evil-collection-init))
    #+end_src 
 
 
@@ -214,7 +259,7 @@ Here are settings for making Emacs my development environment.
 ** LSP
 Language server protocol mode installation and settings.
 #+begin_src emacs-lisp
-  (straight-use-package 'lsp-mode)
+  (elpaca lsp-mode)
 #+end_src
 
 ** Python
@@ -225,12 +270,32 @@ Language server protocol mode installation and settings.
 
 ** Go
 #+begin_src emacs-lisp
-  (straight-use-package 'go-mode)
-  (add-hook 'go-mode-hook #'lsp)
+  (elpaca go-mode
+  (add-hook 'go-mode-hook #'lsp))
 #+end_src
 
 ** Kotlin
 #+begin_src emacs-lisp
-  (straight-use-package 'kotlin-mode)
-  (add-hook 'kotlin-mode-hook 'lsp)
+  (elpaca kotlin-mode
+  (add-hook 'kotlin-mode-hook 'lsp))
 #+end_src
+
+** Git
+#+begin_src emacs-lisp
+  (elpaca magit
+
+  (add-hook 'git-commit-mode-hook #'flyspell-mode)
+
+  (setq git-commit-fill-column 72)
+  (setq magit-process-finish-apply-ansi-colors t)
+
+  (with-eval-after-load 'magit
+    (dolist (face '(magit-diff-added
+		    magit-diff-added-highlight
+		    magit-diff-removed
+		    magit-diff-removed-highlight))
+      (set-face-background face (face-attribute 'magit-diff-context-highlight :background)))
+    (set-face-background 'magit-diff-context-highlight
+			 (face-attribute 'default :background))))
+#+end_src
+
