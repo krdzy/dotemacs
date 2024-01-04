@@ -8,3 +8,7 @@ config.el
 *history*
 .DS*
 .lsp*
+url/
+var/
+.cache/
+recentf

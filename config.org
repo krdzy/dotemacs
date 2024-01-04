@@ -1,6 +1,38 @@
 /#+TITLE: Emacs Configuration
 
 
+* Table of contents :toc:
+- [[#startup-config][Startup Config]]
+- [[#packages][Packages]]
+  - [[#her-majesty-elpaca][Her Majesty Elpaca]]
+- [[#org][Org]]
+  - [[#table-of-contents][Table of contents]]
+  - [[#org-bullets][Org bullets]]
+- [[#appearence][Appearence]]
+  - [[#general-frame-appearence][General frame appearence]]
+  - [[#modeline-appearence][Modeline appearence]]
+  - [[#editor][Editor]]
+  - [[#font][Font]]
+- [[#system-completion][System Completion]]
+  - [[#vertico][Vertico]]
+  - [[#company][Company]]
+  - [[#orderles][Orderles]]
+  - [[#marginalia][Marginalia]]
+- [[#system-utilities][System utilities]]
+  - [[#measuring-start-up][Measuring start-up]]
+  - [[#which-key][Which Key]]
+  - [[#helpful][Helpful]]
+- [[#evil-][Evil 😈]]
+  - [[#setup-for-evil-mode][Setup for evil mode]]
+  - [[#evil-colections][Evil colections]]
+- [[#development][Development]]
+  - [[#lsp][LSP]]
+  - [[#python][Python]]
+  - [[#go][Go]]
+  - [[#kotlin][Kotlin]]
+  - [[#git][Git]]
+  - [[#sql][SQL]]
+
 * Startup Config
   
 #+begin_src emacs-lisp
@@ -19,8 +51,12 @@
     (exec-path-from-shell-initialize))
 
   (recentf-mode 1)
+  (setq make-backup-files nil)
 #+End_src
 
+
+* Packages
+** Her Majesty Elpaca
 #+begin_src emacs-lisp
     (defvar elpaca-installer-version 0.3)
     (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -58,6 +94,16 @@
     (add-hook 'after-init-hook #'elpaca-process-queues)
     (elpaca `(,@elpaca-order))
   (setq package-enable-at-startup nil)
+
+  ;; Install use-package support
+  (elpaca elpaca-use-package
+    ;; Enable :elpaca use-package keyword.
+    (elpaca-use-package-mode)
+    ;; Assume :elpaca t unless otherwise specified.
+    (setq elpaca-use-package-by-default t))
+
+  ;; Block until current queue processed.
+  (elpaca-wait)
 #+End_src
 
 
@@ -66,8 +112,21 @@
   #+begin_src emacs-lisp
     (require 'org-tempo)
     (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  #+end_src
+  #+END_SRC
 
+** Table of contents
+#+BEGIN_SRC emacs-lisp
+  (use-package toc-org
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
+#+END_SRC
+
+** Org bullets
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'org-indent-mode)
+  (use-package org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+END_SRC
 
   
 * Appearence
@@ -105,16 +164,32 @@
 
   #+end_src
 
+** Modeline appearence
+I use Doom modeline to customize my modeline appearence
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1))
+#+end_src
+
 ** Editor
    settings for text editor appearence
    #+begin_src emacs-lisp
      (show-paren-mode 1)
      ;; show line numbers in editor
      (global-display-line-numbers-mode 1)
+     ;; show column number in editor
+     (column-number-mode)
    #+end_src
 
    #+begin_src emacs-lisp
      (setq ispell-program-name "/usr/local/bin/aspell")
+   #+end_src
+
+   Rainbow delimeter
+   #+begin_src emacs-lisp
+     (use-package rainbow-delimiters
+       :hook (prog-mode . rainbow-delimiters-mode))
    #+end_src
 
 ** Font
@@ -202,13 +277,25 @@
 
 * System utilities
 packages to make my life with emacs easier.
+
+
+** Measuring start-up
+I like to know how fast Emacs has started.
+#+BEGIN_SRC emacs-lisp
+;;(add-hook 'emacs-startup-hook
+  ;;        #'(lambda ()
+    ;;          (message "Emacs ready in %s with %d garbage collections."
+      ;;                 (emacs-init-time)
+        ;;               gcs-done)))
+#+END_SRC
   
 ** Which Key
    minor mode for Emacs that displays the key bindings following your currently entered incomplete command (a prefix) in a popup.
   #+begin_src emacs-lisp
-    (elpaca which-key
-    (setq which-key-idle-delay 0.5)
-    (add-hook 'elpaca-after-init-hook 'which-key-mode))
+    (use-package which-key
+      :init (which-key-mode)
+      :config
+      (setq which-key-idle-delay 0.5))
   #+end_src
 
 ** Helpful
@@ -299,3 +386,15 @@ Language server protocol mode installation and settings.
 			 (face-attribute 'default :background))))
 #+end_src
 
+** SQL
+#+BEGIN_SRC emacs-lisp
+  (elpaca emacsql-sqlite)
+
+  (add-hook 'sql-mode-hook 'lsp)
+  (setq lsp-sqls-workspace-config-path nil)
+
+  (setq sql-connection-alist
+	'((db-dev (sql-product 'postgres)
+		  (sql-database "postgresql://mvrdevadmin:mvr-dev-admin@localhost:9995/mvrdbdev"))))
+
+#+END_SRC
